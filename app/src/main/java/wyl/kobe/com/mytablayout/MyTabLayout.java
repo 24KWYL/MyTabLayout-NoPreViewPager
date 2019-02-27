@@ -289,7 +289,7 @@ public class MyTabLayout extends HorizontalScrollView {
             lineLeft = (currentPositionOffset * nextTabLeft + (1f - currentPositionOffset) * lineLeft);
             lineRight = (currentPositionOffset * nextTabRight + (1f - currentPositionOffset) * lineRight);
         }
-        RectF rectF = new RectF(lineLeft + paddingLeft, height - indicatorHeight, lineRight - paddingRight, height);
+        RectF rectF = new RectF(lineLeft + dividerPadding, height - indicatorHeight, lineRight - dividerPadding, height);
         //选中底部下划线描绘
 //        canvas.drawRect(lineLeft + paddingLeft, height - indicatorHeight, lineRight - paddingRight, height, rectPaint);
         canvas.drawRoundRect(rectF, 8, 8, rectPaint);
