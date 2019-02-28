@@ -42,7 +42,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Description: 重写v4包下的ViewPager 取消预加载功能
+ *  重写v4包下的ViewPager 取消预加载功能
  */
 
 public class BaseViewPager extends ViewGroup {

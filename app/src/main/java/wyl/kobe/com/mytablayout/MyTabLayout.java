@@ -30,7 +30,7 @@ import java.util.Locale;
 public class MyTabLayout extends HorizontalScrollView {
 
     public interface IconTabProvider {
-        public int getPageIconResId(int position);
+        int getPageIconResId(int position);
     }
 
     // @formatter:off
@@ -65,9 +65,8 @@ public class MyTabLayout extends HorizontalScrollView {
     private int scrollOffset = 52;
     private int indicatorHeight = 2; //选中item下划线高度
     private int underlineHeight = 1;//默认下划线背景高度
-    private int dividerPadding = 12;//item分割线padding
+    private int dividerPadding = 0;//item分割线padding
     private int tabPadding = 16;
-    private int dividerWidth = 0; //item分割线宽度
 
     private int tabTextSize = 14; //默认字体大小
     private int tabTextColor = 0xFF757575; //默认字体颜色
@@ -78,6 +77,9 @@ public class MyTabLayout extends HorizontalScrollView {
     private int tabTypefaceStyle = Typeface.BOLD; //字体样式
     private int itemWidth = 0;//默认item宽度
     private int lastScrollX = 0;
+
+    private int height = 0;
+    private int tabWidth = 0;//宽度
 
     private Locale locale;
 
@@ -106,7 +108,7 @@ public class MyTabLayout extends HorizontalScrollView {
         underlineHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, underlineHeight, dm);
         dividerPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dividerPadding, dm);
         tabPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, tabPadding, dm);
-        dividerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dividerWidth, dm);
+//        dividerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dividerWidth, dm);
         tabTextSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, tabTextSize, dm);
 
         TypedArray a = context.obtainStyledAttributes(attrs, ATTRS);
@@ -115,10 +117,14 @@ public class MyTabLayout extends HorizontalScrollView {
         rectPaint = new Paint();
         rectPaint.setAntiAlias(true);
         rectPaint.setStyle(Paint.Style.FILL);
+        //选中item下划线颜色
+        rectPaint.setColor(indicatorColor);
 
         dividerPaint = new Paint();
         dividerPaint.setAntiAlias(true);
-        dividerPaint.setStrokeWidth(dividerWidth);
+//        dividerPaint.setStrokeWidth(dividerWidth);
+        //默认底部下划线颜色
+        dividerPaint.setColor(underlineColor);
 
         defaultTabLayoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT);
@@ -127,6 +133,39 @@ public class MyTabLayout extends HorizontalScrollView {
         if (locale == null) {
             locale = getResources().getConfiguration().locale;
         }
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        height = getHeight();
+        tabWidth = tabsContainer.getWidth();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (isInEditMode() || tabCount == 0) {
+            return;
+        }
+        canvas.drawRect(0, height - underlineHeight, tabWidth, height, dividerPaint);
+        //选中tab
+        TextView currentTab = (TextView) tabsContainer.getChildAt(currentPosition);
+        float textWidth = currentTab.getPaint().measureText(currentTab.getText().toString());
+        float lineLeft = (currentTab.getLeft() + currentTab.getRight() - textWidth) / 2;
+        float lineRight = (currentTab.getLeft() + currentTab.getRight() + textWidth) / 2;
+        // 计算位移
+        if (currentPositionOffset > 0f && currentPosition < tabCount - 1) {
+            TextView nextTab = (TextView) tabsContainer.getChildAt(currentPosition + 1);
+            float nextWidth = nextTab.getPaint().measureText(nextTab.getText().toString());
+            final float nextTabLeft = (nextTab.getLeft() + nextTab.getRight() - nextWidth) / 2;
+            final float nextTabRight = (nextTab.getLeft() + nextTab.getRight() + nextWidth) / 2;
+            lineLeft = (currentPositionOffset * nextTabLeft + (1f - currentPositionOffset) * lineLeft);
+            lineRight = (currentPositionOffset * nextTabRight + (1f - currentPositionOffset) * lineRight);
+        }
+        //画indicator
+        RectF rectF = new RectF(lineLeft + dividerPadding, height - indicatorHeight, lineRight - dividerPadding, height);
+        canvas.drawRoundRect(rectF, 8, 8, rectPaint);
     }
 
     /**
@@ -263,38 +302,6 @@ public class MyTabLayout extends HorizontalScrollView {
         }
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        if (isInEditMode() || tabCount == 0) {
-            return;
-        }
-        final int height = getHeight();
-        //默认底部下划线颜色
-        rectPaint.setColor(underlineColor);
-        canvas.drawRect(0, height - underlineHeight, tabsContainer.getWidth(), height, rectPaint);
-        //选中item下划线颜色
-        rectPaint.setColor(indicatorColor);
-        // default: line below current tab
-        View currentTab = tabsContainer.getChildAt(currentPosition);
-        float lineLeft = currentTab.getLeft();
-        float lineRight = currentTab.getRight();
-        float paddingLeft = currentTab.getPaddingLeft();
-        float paddingRight = currentTab.getPaddingRight();
-        // if there is an offset, start interpolating left and right coordinates between current and next tab
-        if (currentPositionOffset > 0f && currentPosition < tabCount - 1) {
-            View nextTab = tabsContainer.getChildAt(currentPosition + 1);
-            final float nextTabLeft = nextTab.getLeft();
-            final float nextTabRight = nextTab.getRight();
-            lineLeft = (currentPositionOffset * nextTabLeft + (1f - currentPositionOffset) * lineLeft);
-            lineRight = (currentPositionOffset * nextTabRight + (1f - currentPositionOffset) * lineRight);
-        }
-        RectF rectF = new RectF(lineLeft + dividerPadding, height - indicatorHeight, lineRight - dividerPadding, height);
-        //选中底部下划线描绘
-//        canvas.drawRect(lineLeft + paddingLeft, height - indicatorHeight, lineRight - paddingRight, height, rectPaint);
-        canvas.drawRoundRect(rectF, 8, 8, rectPaint);
-    }
-
     public class PageListener implements BaseViewPager.OnPageChangeListener {
 
         @Override
@@ -302,8 +309,7 @@ public class MyTabLayout extends HorizontalScrollView {
             currentPosition = position;
             currentPositionOffset = positionOffset;
 
-            scrollToChild(position,
-                    (int) (positionOffset * tabsContainer.getChildAt(position).getWidth()));
+            scrollToChild(position, (int) (positionOffset * tabsContainer.getChildAt(position).getWidth()));
 
             invalidate();
 
@@ -407,7 +413,7 @@ public class MyTabLayout extends HorizontalScrollView {
 
     public void setShouldExpand(boolean shouldExpand) {
         this.shouldExpand = shouldExpand;
-        notifyDataSetChanged();
+//        notifyDataSetChanged();
     }
 
     public boolean getShouldExpand() {

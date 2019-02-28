@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         myTabLayout = findViewById(R.id.tab_layout);
+        myTabLayout.setShouldExpand(true);
         viewPager = findViewById(R.id.view_pager);
         fragments.add(MyFragment.newInstance());
         fragments.add(MyFragment.newInstance());
