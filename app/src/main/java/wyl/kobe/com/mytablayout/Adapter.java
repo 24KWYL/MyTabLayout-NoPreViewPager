@@ -3,6 +3,7 @@ package wyl.kobe.com.mytablayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
 import java.util.ArrayList;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
  * Created by KOBE on 2018/5/24.
  */
 
-public class Adapter extends FragmentPagerAdapter {
+public class Adapter extends FragmentStatePagerAdapter {
     private ArrayList<Fragment> fragments;
     private String[] titles;
 
